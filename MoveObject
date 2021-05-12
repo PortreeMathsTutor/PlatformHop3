@@ -1,0 +1,95 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour
+{
+    [SerializeField] private Vector3 centerOffset;
+    private bool moveNow;
+    Vector3 cubeOne;
+    Vector3 cubeTwo;
+    float fracComplete;
+    Vector3 startReletiveCenter;
+    Vector3 endReletiveCenter;
+    Vector3 center;
+
+    public static int score;
+    // Time to move from cubeOne to cubeTwo position, in seconds.
+    public float journeyTime = 10;
+
+    // The time at which the animation started.
+    private float startTime;
+
+
+    void Start()
+    {
+  
+        score = 0;
+        gameObject.GetComponent<Renderer>().material.color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+        transform.position = new Vector3(0, 0, transform.position.z);
+        cubeOne = transform.position;
+        cubeTwo = transform.position;
+
+        // Note the time at the start of the animation.
+        startTime = Time.time;
+    }
+
+    void FixedUpdate()
+    {
+    
+        if (score > 20) { journeyTime = 8; }
+        if (score > 30) { journeyTime = 5; }
+        if (score > 50) { journeyTime = 1; }
+        // The center of the arc
+        center = (cubeOne + cubeTwo) * 0.5F;
+
+        // move the center a bit downwards to make the arc vertical
+        center -= centerOffset;
+
+        // Interpolate over the arc relative to center
+        endReletiveCenter = cubeOne - center;
+        startReletiveCenter = cubeTwo - center;
+
+        // The fraction of the animation that has happened so far is
+        // equal to the elapsed time divided by the desired time for
+        // the total journey.
+        fracComplete = (Time.time - startTime) / journeyTime;
+
+        transform.position = Vector3.Slerp(endReletiveCenter, startReletiveCenter, fracComplete);
+        transform.position += center;
+
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+     
+
+            if (other.tag == "Player")
+            {
+                cubeOne = transform.position;
+                cubeTwo = transform.position;
+                score += 1;
+        }
+     
+        
+    }
+    private void OnTriggerExit(Collider other)
+    {
+      
+      
+       
+            if (other.tag == "Player")
+            {
+                journeyTime = journeyTime - (25 * Time.deltaTime);
+                startTime = Time.time;
+                cubeOne = new Vector3(0, 0, transform.position.z);
+
+                if (score < 80) { cubeTwo = transform.position + new Vector3(Random.Range(-0.3f, 0.3f), 0, 100); }
+                else { cubeTwo = transform.position + new Vector3(Random.Range(-0.35f, 0.35f), 0, 100); }
+                gameObject.GetComponent<Renderer>().material.color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+         
+             
+            }
+
+       
+    }
+}
