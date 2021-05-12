@@ -1,0 +1,62 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+//using UnityEngine.SceneManagement;
+
+public class Player : MonoBehaviour
+{
+
+    [SerializeField] private Transform groundCheckTransform = null;
+    [SerializeField] private LayerMask playerMask; //use this if you give the player and the ground check the same layer.
+    public int score;                                           // in the exposed [SerializableField] put every layer except the player layer.
+    bool JumpKeyWasPressed;
+    float horizontalInput;
+    float verticalInput;
+    private Rigidbody rigidbodyComponent;
+    private float jumpHight;
+    Rigidbody m_Rigidbody;
+    private bool notFirstJump;
+
+    private void Start()
+    {
+        m_Rigidbody = GetComponent<Rigidbody>();
+        m_Rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+        score = 0;
+        jumpHight = 6;
+        rigidbodyComponent = GetComponent<Rigidbody>();
+    }
+    void Update()
+    {
+     
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (notFirstJump == true) { JumpKeyWasPressed = true; }
+            notFirstJump = true;
+            m_Rigidbody.constraints = RigidbodyConstraints.None;
+        }
+        horizontalInput = Input.GetAxis("Horizontal");
+        verticalInput = 5;
+        if (score > 20) { verticalInput = 6; }
+        if (score > 30) { verticalInput = 7; }
+        if (score > 40) { verticalInput = 8; }
+ 
+    }
+
+    void FixedUpdate()
+    {
+        rigidbodyComponent.velocity = new Vector3(horizontalInput, rigidbodyComponent.velocity.y, verticalInput);
+        if (Physics.OverlapSphere(groundCheckTransform.position, 0.1f, playerMask).Length == 0)
+        {
+            return;
+        }
+
+        if (JumpKeyWasPressed)
+        {
+            score = MoveObject.score;
+            if (score > 20) { jumpHight = 5; }
+            if (score > 30) { jumpHight = 4; }
+            rigidbodyComponent.AddForce(Vector3.up * jumpHight, ForceMode.VelocityChange);
+            JumpKeyWasPressed = false;
+        }
+    }
+}
